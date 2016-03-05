@@ -3,4 +3,11 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <string name="delete">delete selected memo(if not selected, not delete)</string>
+    <string name="add">add memo</string>
+
+    <string name="title">タイトル</string>
+    <string name="memo">メモ</string>
+    <string name="finish">OK</string>
 </resources>
