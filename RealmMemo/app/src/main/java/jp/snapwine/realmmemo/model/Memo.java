@@ -10,6 +10,7 @@ import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
+import io.realm.Sort;
 
 /**
  * Created by kondoutomoko on 2016/03/04.
@@ -18,9 +19,7 @@ public class Memo {
     public static String[] getTitles(Context appContext) {
         String[] titles;
 
-        Realm realm = getRealm(appContext);
-        RealmQuery<MemoObject> query = realm.where(MemoObject.class);
-        RealmResults<MemoObject> results = query.findAll();
+        RealmResults<MemoObject> results = sortMemo(appContext);
 
         titles = new String[results.size()];
         Iterator<MemoObject> iterator = results.iterator();
@@ -47,37 +46,26 @@ public class Memo {
         MemoObject memo;
 
         Realm realm = getRealm(appContext);
-        RealmQuery<MemoObject> query = realm.where(MemoObject.class);
+        RealmQuery<MemoObject> query = realm.where(MemoObject.class).equalTo("id", id);
         RealmResults<MemoObject> results = query.findAll();
-        memo = results.get(id);
+        memo = results.first();
 
         return memo;
     }
 
-    public static void deleteMemo(Context appContext, MemoObject memoObject, int id) {
+    public static void deleteMemo(Context appContext, int id) {
         Realm realm = getRealm(appContext);
-        RealmResults<MemoObject> results = realm.where(MemoObject.class).findAll();
+        RealmResults<MemoObject> results = realm.where(MemoObject.class).equalTo("id", id).findAll();
         realm.beginTransaction();
 
-        if (memoObject != null) {
-            memoObject.removeFromRealm();
-        } else if (id >= 0 && id < results.size()) {
-            List<MemoObject> memoList = new ArrayList<>();
-            Iterator<MemoObject> iterator = results.iterator();
-            for (int i = 0; iterator.hasNext(); i++) {
-                MemoObject tmp = iterator.next();
-                if (i != id) {
-                    MemoObject replaceMemo = new MemoObject();
-                    replaceMemo.setTitle(tmp.getTitle());
-                    replaceMemo.setMemo(tmp.getMemo());
-                    memoList.add(replaceMemo);
-                }
-            }
-            results.clear();
-            realm.copyToRealm(memoList);
-        }
+        MemoObject memoObject = results.first();
+        if (memoObject == null)
+            return;
+        memoObject.removeFromRealm();
 
         realm.commitTransaction();
+
+        sortMemo(appContext);
     }
 
     public static void addMemo(Context appContext, String title, String memo) {
@@ -87,8 +75,10 @@ public class Memo {
         MemoObject memoObject = realm.createObject(MemoObject.class);
         memoObject.setTitle(title);
         memoObject.setMemo(memo);
+        memoObject.setId(-1);
 
         realm.commitTransaction();
+        sortMemo(appContext);
     }
 
     public static void changeMemo(Context appContext, MemoObject memoObject, String title, String memo) {
@@ -97,12 +87,40 @@ public class Memo {
 
         memoObject.setTitle(title);
         memoObject.setMemo(memo);
+        memoObject.setId(-1);
 
+        realm.commitTransaction();
+
+        sortMemo(appContext);
+    }
+
+    private static RealmResults<MemoObject> sortMemo(Context appContext) {
+        Realm realm = getRealm(appContext);
+
+        RealmResults<MemoObject> results = realm.where(MemoObject.class).findAll();
+
+        results.sort("id");
+        setIds(realm, results);
+
+        return results;
+    }
+
+    private static void setIds(Realm realm, RealmResults<MemoObject> results) {
+        MemoObject[] memoObjects = new MemoObject[results.size()];
+        Iterator<MemoObject> iterator = results.iterator();
+        for (int i = 0; iterator.hasNext(); i++) {
+            memoObjects[i] = iterator.next();
+        }
+
+        realm.beginTransaction();
+        for (int i = 0; i < memoObjects.length; i++) {
+            memoObjects[i].setId(i);
+        }
         realm.commitTransaction();
     }
 
     private static Realm getRealm(Context appContext) {
-        RealmConfiguration realmConfig = new RealmConfiguration.Builder(appContext).build();
+        RealmConfiguration realmConfig = new RealmConfiguration.Builder(appContext).schemaVersion(1).build();
         return Realm.getInstance(realmConfig);
     }
 }

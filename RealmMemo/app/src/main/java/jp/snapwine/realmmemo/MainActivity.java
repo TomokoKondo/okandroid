@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
             if (focusId > -1 && focusId < memoList.size()) {
                 ((LinearLayout) findViewById(R.id.root_memo)).removeView(memoList.get(focusId));
                 memoList.remove(focusId);
-                Memo.deleteMemo(getApplicationContext(), null, focusId);
+                Memo.deleteMemo(getApplicationContext(), focusId);
                 focusId = -1;
                 setFocus(focusId);
                 for (int i = 0; i < memoList.size(); i++) {

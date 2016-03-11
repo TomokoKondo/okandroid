@@ -10,6 +10,7 @@ public class MemoObject extends RealmObject {
     @Required
     private String title;
     private String memo;
+    private int id;
 
     public String getTitle() {
         return title;
@@ -25,5 +26,13 @@ public class MemoObject extends RealmObject {
 
     public void setMemo(String memo) {
         this.memo = memo;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

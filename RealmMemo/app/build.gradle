@@ -21,5 +21,5 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:23.0.1'
-    compile files('/Users/kondoutomoko/Desktop/okandroid/RealmMemo/libs/realm-android-0.87.5.jar')
+    compile files('libs/realm-android-0.87.5.jar')
 }
